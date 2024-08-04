@@ -1,4 +1,4 @@
-package tui
+package main
 
 import (
 	"fmt"
@@ -69,8 +69,7 @@ func main() {
 	l.SetLevel(lvl)
 
 	// attempt to login via token, then credentials.
-	var session *revoltgo.Session
-	session = loginViaToken(l)
+	var session *revoltgo.Session = loginViaToken(l)
 	if session == nil {
 		session = loginViaCredentials(l)
 	}
@@ -80,7 +79,7 @@ func main() {
 		return
 	}
 	// spin up program
-	tea.NewProgram(model.Initial())
+	tea.NewProgram(model.Initial(session, l))
 }
 
 // Attempts to authenticate via the existing token, found in the config directory.
@@ -89,7 +88,7 @@ func main() {
 func loginViaToken(l *log.Logger) (session *revoltgo.Session) {
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
-		l.Warnf("failed to open user config directory. Skipping token login.",
+		l.Warn("failed to open user config directory. Skipping token login.",
 			"error", err, "config path", cfgDir)
 		return nil
 	}

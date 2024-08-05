@@ -1,0 +1,1 @@
+2024/08/05 17:00:48 WARN <RevoltTUI/main.go:112> failed to open token file. Skipping token login. error="open /home/rl/.config/revolttui/token: permission denied" file path=/home/rl/.config/revolttui/token

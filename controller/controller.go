@@ -1,3 +1,5 @@
+// The controller is the main, parent tea.Model that drives every other tea.Model and ensures
+// control is passed around appropriately.
 package controller
 
 import (
@@ -15,6 +17,7 @@ type controller struct {
 	mode          modes.Mode
 	curAction     modes.Action
 	session       *revoltgo.Session
+	initialCmd    tea.Cmd
 }
 
 // model needs a logged in Client to proceed
@@ -25,7 +28,7 @@ func Initial(session *revoltgo.Session) controller {
 	}
 
 	// attach message handler
-	model.session.AddHandler(func(session *revoltgo.Session, r *revoltgo.Message) {
+	model.session.AddHandler(func(session *revoltgo.Session, r *revoltgo.EventMessage) {
 		log.Writer.Info("A message has arrived", "msg", r)
 		// TODO display as a top-level notification if not in a current viewing window
 	})
@@ -36,15 +39,23 @@ func Initial(session *revoltgo.Session) controller {
 	}
 
 	// enter the starter (server selection) mode
+	log.Writer.Debug("controller entering initial mode", "mode", model.mode)
 	model.curAction = modes.Get(model.mode)
+	if success, init := model.curAction.Enter(model.width, model.height); !success {
+		// failure, dying...
+		model.quitting = true
+		return model
+	} else {
+		model.initialCmd = init
+	}
 
 	return model
 }
 
 //#region tea.Model implementation
 
-func (ctrlr controller) Init() tea.Cmd {
-	return nil
+func (ctl controller) Init() tea.Cmd {
+	return ctl.initialCmd
 }
 
 func (ctl controller) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

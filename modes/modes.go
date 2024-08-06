@@ -39,9 +39,10 @@ func Add(mode Mode, action Action) {
 }
 
 func Get(mode Mode) Action {
+	log.Writer.Debug("fetching action from mode", "map", modes, "mode", mode)
 	action := modes[mode]
 	if action == nil {
-		log.Writer.Fatal("no actions associated", "mode", mode, "modes", modes)
+		log.Writer.Fatal("no actions associated", "map", modes, "mode", mode)
 	}
 	return modes[mode]
 }

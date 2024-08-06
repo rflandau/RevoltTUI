@@ -4,6 +4,7 @@ import (
 	"revolt_tui/cache"
 	"revolt_tui/log"
 	"revolt_tui/modes"
+	"revolt_tui/terminal"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,12 +20,12 @@ func (a *Action) ChangeMode() (bool, modes.Mode) {
 	return false, modes.ServerSelection
 }
 
-func (a *Action) Enter(width, height int) (bool, tea.Cmd) {
+func (a *Action) Enter() (bool, tea.Cmd) {
 	var cmd tea.Cmd
 	if a.initialized {
 		// if we have already been initialized, update current values
-		a.list.SetWidth(width)
-		a.list.SetHeight(height)
+		a.list.SetWidth(terminal.Width())
+		a.list.SetHeight(terminal.Height())
 
 		// regenerate servers list as []list.Item
 		// the server list should never become nil after being initialized, but you never know
@@ -32,22 +33,14 @@ func (a *Action) Enter(width, height int) (bool, tea.Cmd) {
 			cmd = a.list.SetItems(castServersToItems(servers))
 		} // else, do nothing
 
-	} else if cache.Ready() && width != 0 && height != 0 {
-		log.Writer.Debug("initializing server selection...")
-
-		// if we have not been initialized, attempt to initialize
-		a.list = list.New(castServersToItems(cache.Servers()), list.NewDefaultDelegate(), width, height)
-		a.initialized = true
-
-	} else {
-		// still cannot initialize; will be done so by Update as soon as possible
+	} else if !a.tryInitialize() {
 		log.Writer.Debug("not yet able to initialize")
 	}
 	return true, cmd
 }
 
 func (a *Action) Update(session *revoltgo.Session, msg tea.Msg) tea.Cmd {
-	if !a.initialized { // still waiting
+	if !a.initialized && !a.tryInitialize() { //retry initialization
 		return nil
 	}
 	var cmd tea.Cmd
@@ -76,6 +69,20 @@ func castServersToItems(servers []*revoltgo.Server) []list.Item {
 	}
 
 	return itms
+}
+
+func (a *Action) tryInitialize() bool {
+	w, h := terminal.Width(), terminal.Height()
+	if !cache.Ready() || w == 0 || h == 0 {
+		return false
+	}
+	log.Writer.Debug("initializing server selection...")
+
+	// if we have not been initialized, attempt to initialize
+	a.list = list.New(castServersToItems(cache.Servers()), list.NewDefaultDelegate(), w, h)
+	a.initialized = true
+
+	return true
 }
 
 //#endregion

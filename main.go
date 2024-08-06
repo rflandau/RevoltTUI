@@ -26,7 +26,7 @@ const (
 func init() {
 	pflag.String("loglevel", "DEBUG",
 		"set the log level.\n"+
-			"Viable options (from most verbose to leaset) are: debug, info, warn, error, fatal")
+			"Viable options (from most verbose to least) are: debug, info, warn, error, fatal")
 }
 
 func main() {

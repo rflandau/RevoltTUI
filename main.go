@@ -10,6 +10,8 @@ import (
 	"revolt_tui/controller"
 	"revolt_tui/credentials"
 	"revolt_tui/log"
+	"revolt_tui/modes"
+	serverselection "revolt_tui/modes/serverSelection"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sentinelb51/revoltgo"
@@ -49,15 +51,23 @@ func main() {
 			log.Destroy()
 			return
 		}
-	}
-	if session == nil { // die on failure
-		fmt.Fprintln(os.Stderr, "An error has occurred. Sorry, friend.")
-		log.Destroy()
-		return
+		if session == nil { // die on failure
+			fmt.Fprintln(os.Stderr, "An error has occurred. Sorry, friend.")
+			log.Destroy()
+			return
+		}
+		// write the token from the session so we do not need to prompt next time
+		tokenFile, err := os.Create(path.Join(cfgdir.Get(), tokenFileName))
+		if err != nil {
+			log.Writer.Warn("failed to create token file", "error", err)
+		} else {
+			tokenFile.WriteString(session.Token)
+		}
+		tokenFile.Close()
 	}
 
-	// attach ready handler to the session
-	session.AddHandler(cache.OnEventReadyFunc)
+	// register modes
+	modes.Add(modes.ServerSelection, &serverselection.Action{})
 
 	/*func(session *revoltgo.Session, r *revoltgo.EventReady) {
 		log.Writer.Info("Ready to handle commands from %v user(s) across %d servers from %d channels",
@@ -92,6 +102,15 @@ func main() {
 
 	// spin up program
 	p := tea.NewProgram(controller.Initial(session))
+
+	// attach ready handler to our revoltgo session so we can inject messages into bubble tea
+	session.AddHandler(func(session *revoltgo.Session, r *revoltgo.EventReady) {
+		// update the cache
+		cache.OnEventReadyFunc(session, r)
+		log.Writer.Info("cache updated")
+		p.Send(cache.CacheUpdatedMsg{})
+	})
+
 	_, err := p.Run()
 	if err != nil {
 		log.Writer.Error("error running the main model", "error", err)

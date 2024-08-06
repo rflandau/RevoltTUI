@@ -148,20 +148,5 @@ func loginViaCredentials() (session *revoltgo.Session, killed bool) {
 		return nil, true
 	}
 
-	// fetch credentials to log in with
-	email := credModel.EmailTI.Value()
-	pass := credModel.PassTI.Value()
-
-	sess, lr, err := revoltgo.NewWithLogin(revoltgo.LoginData{
-		Email:        email,
-		Password:     pass,
-		FriendlyName: "TUIFriendly",
-	})
-	if err != nil {
-		log.Writer.Error(err)
-		return nil, false
-	}
-	log.Writer.Debug("completed login attempt", "loginResponse", lr)
-
-	return sess, false
+	return credModel.Session, false
 }

@@ -57,12 +57,12 @@ func main() {
 	}
 
 	// attach ready handler to the session
-	session.AddHandler(cache.OnEventReadyfunc)
+	session.AddHandler(cache.OnEventReadyFunc)
 
 	/*func(session *revoltgo.Session, r *revoltgo.EventReady) {
 		log.Writer.Info("Ready to handle commands from %v user(s) across %d servers from %d channels",
 			len(r.Users), len(r.Servers), len(r.Channels))
-		cache.OnEventReadyfunc(session, r)
+		cache.OnEventReadyFunc(session, r)
 		// update all dependencies of model.cache
 
 		//#region server selection

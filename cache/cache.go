@@ -16,7 +16,7 @@ var ready bool // cache has been populated at least once
 var cacheMTX *sync.RWMutex
 
 // updates the cache on Ready event; registered during the AddHandler
-func OnEventReadyfunc(_ *revoltgo.Session, r *revoltgo.EventReady) {
+func OnEventReadyFunc(_ *revoltgo.Session, r *revoltgo.EventReady) {
 	cacheMTX.Lock()
 
 	isCacheNil := cache == nil

@@ -25,3 +25,4 @@ go.work.sum
 .env
 
 revolt_tui
+log.txt

@@ -27,7 +27,7 @@ type Action interface {
 	// Called at the end of controller's update to determine if the current mode wants to yield control and to whom.
 	ChangeMode() (bool, Mode)
 	// Called after ChangeMode, to allow the new mode to ready itself
-	Enter(width, height int) (success bool, init tea.Cmd)
+	Enter() (success bool, init tea.Cmd)
 	Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd
 	View() string
 }

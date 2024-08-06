@@ -5,6 +5,7 @@ package controller
 import (
 	"revolt_tui/log"
 	"revolt_tui/modes"
+	"revolt_tui/terminal"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -12,12 +13,11 @@ import (
 )
 
 type controller struct {
-	quitting      bool
-	width, height int // dimensions of the usable terminal space
-	mode          modes.Mode
-	curAction     modes.Action
-	session       *revoltgo.Session
-	initialCmd    tea.Cmd
+	quitting   bool
+	mode       modes.Mode
+	curAction  modes.Action
+	session    *revoltgo.Session
+	initialCmd tea.Cmd
 }
 
 // model needs a logged in Client to proceed
@@ -41,7 +41,7 @@ func Initial(session *revoltgo.Session) controller {
 	// enter the starter (server selection) mode
 	log.Writer.Debug("controller entering initial mode", "mode", model.mode)
 	model.curAction = modes.Get(model.mode)
-	if success, init := model.curAction.Enter(model.width, model.height); !success {
+	if success, init := model.curAction.Enter(); !success {
 		// failure, dying...
 		model.quitting = true
 		return model
@@ -74,8 +74,7 @@ func (ctl controller) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// capture window size
 	if WSMsg, ok := msg.(tea.WindowSizeMsg); ok {
-		ctl.width = WSMsg.Width
-		ctl.height = WSMsg.Height
+		terminal.SetDimensions(WSMsg.Width, WSMsg.Height)
 	}
 
 	var cmd tea.Cmd = ctl.curAction.Update(ctl.session, msg)
@@ -85,7 +84,7 @@ func (ctl controller) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctl.mode = newMode
 		// fetch the action associated to the new mode
 		ctl.curAction = modes.Get(ctl.mode)
-		if success, init := ctl.curAction.Enter(ctl.width, ctl.height); !success {
+		if success, init := ctl.curAction.Enter(); !success {
 			// failure, dying...
 			ctl.quitting = true
 			return ctl, tea.Quit

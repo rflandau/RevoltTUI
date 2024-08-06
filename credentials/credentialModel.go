@@ -2,9 +2,12 @@ package credentials
 
 import (
 	"fmt"
+	"revolt_tui/log"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/sentinelb51/revoltgo"
 )
 
 type selected uint8
@@ -16,18 +19,20 @@ const (
 
 type Model struct {
 	Killed          bool
-	EmailTI, PassTI textinput.Model
+	emailTI, passTI textinput.Model
 	sel             selected
+	Session         *revoltgo.Session
+	inputErr        string
 }
 
 func InitialModel() Model {
 	cm := Model{
-		EmailTI: textinput.New(),
-		PassTI:  textinput.New(),
+		emailTI: textinput.New(),
+		passTI:  textinput.New(),
 	}
-	cm.PassTI.EchoMode = textinput.EchoPassword
+	cm.passTI.EchoMode = textinput.EchoPassword
 	cm.sel = email
-	cm.EmailTI.Focus()
+	cm.emailTI.Focus()
 	return cm
 }
 
@@ -40,41 +45,59 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// check for special keys
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		// clear a preexisting error
+		m.inputErr = ""
 		switch keyMsg.Type {
-		case tea.KeyTab:
+		case tea.KeyTab, tea.KeyUp, tea.KeyDown:
 			return m, m.switchSelected()
 		case tea.KeyCtrlC, tea.KeyEsc:
 			m.Killed = true
+			return m, tea.Quit
+		case tea.KeyEnter:
+			// attempt to login
+			sess, lr, err := revoltgo.NewWithLogin(revoltgo.LoginData{
+				Email:        strings.TrimSpace(m.emailTI.Value()),
+				Password:     m.passTI.Value(),
+				FriendlyName: "TUIFriendly", // TODO
+			})
+			if err != nil {
+				log.Writer.Error("login failed", "error", err)
+				m.inputErr = err.Error()
+				return m, textinput.Blink
+			}
+			log.Writer.Debug("completed login attempt", "loginResponse", lr)
+			m.Session = sess
 			return m, tea.Quit
 		}
 
 	}
 
-	// check for enter key to attempt to submit the crednetials and generate a session
+	// check for enter key to attempt to submit the credentials and generate a session
 	// TODO
 
 	var cmd tea.Cmd
 	if m.sel == email {
-		m.EmailTI, cmd = m.EmailTI.Update(msg)
+		m.emailTI, cmd = m.emailTI.Update(msg)
 	} else {
-		m.PassTI, cmd = m.PassTI.Update(msg)
+		m.passTI, cmd = m.passTI.Update(msg)
 	}
 	return m, cmd
 }
 
 func (m Model) View() string {
-	return fmt.Sprintf("Email%v\nPassword%v\n", m.EmailTI.View(), m.PassTI.View())
+	return fmt.Sprintf("Email%v\nPassword%v\n%s\n",
+		m.emailTI.View(), m.passTI.View(), m.inputErr)
 }
 
 //#endregion
 
 func (m *Model) switchSelected() tea.Cmd {
 	if m.sel == email {
-		m.EmailTI.Blur()
+		m.emailTI.Blur()
 		m.sel = pass
-		return m.PassTI.Focus()
+		return m.passTI.Focus()
 	}
-	m.PassTI.Blur()
+	m.passTI.Blur()
 	m.sel = email
-	return m.EmailTI.Focus()
+	return m.emailTI.Focus()
 }

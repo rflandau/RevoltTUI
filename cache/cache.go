@@ -8,12 +8,13 @@ import (
 	"revolt_tui/log"
 	"sync"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sentinelb51/revoltgo"
 )
 
 var cache *revoltgo.EventReady
 var ready bool // cache has been populated at least once
-var cacheMTX *sync.RWMutex
+var cacheMTX sync.RWMutex
 
 // updates the cache on Ready event; registered during the AddHandler
 func OnEventReadyFunc(_ *revoltgo.Session, r *revoltgo.EventReady) {
@@ -44,3 +45,7 @@ func Servers() []*revoltgo.Server {
 }
 
 //#endregion public getters
+
+type CacheUpdatedMsg struct {
+	tea.Msg
+}

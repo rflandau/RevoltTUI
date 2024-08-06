@@ -10,11 +10,6 @@ import (
 	"github.com/sentinelb51/revoltgo"
 )
 
-func init() {
-	// add self to the modes map
-	modes.Add(modes.ServerSelection, &Action{})
-}
-
 type Action struct {
 	list        list.Model
 	initialized bool

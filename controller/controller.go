@@ -3,9 +3,9 @@
 package controller
 
 import (
+	"revolt_tui/broker"
 	"revolt_tui/log"
 	"revolt_tui/modes"
-	"revolt_tui/terminal"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -76,7 +76,7 @@ func (ctl controller) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// capture window size
 	if WSMsg, ok := msg.(tea.WindowSizeMsg); ok {
-		terminal.SetDimensions(WSMsg.Width, WSMsg.Height)
+		broker.SetDimensions(WSMsg.Width, WSMsg.Height)
 	}
 
 	var cmd tea.Cmd = ctl.curAction.Update(ctl.session, msg)

@@ -1,10 +1,10 @@
 package serverselection
 
 import (
+	"revolt_tui/broker"
 	"revolt_tui/cache"
 	"revolt_tui/log"
 	"revolt_tui/modes"
-	"revolt_tui/terminal"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -27,8 +27,8 @@ func (a *Action) Enter() (bool, tea.Cmd) {
 	var cmd tea.Cmd
 	if a.initialized {
 		// if we have already been initialized, update current values
-		a.list.SetWidth(terminal.Width())
-		a.list.SetHeight(terminal.Height())
+		a.list.SetWidth(broker.Width())
+		a.list.SetHeight(broker.Height())
 
 		// regenerate servers list as []list.Item
 		// the server list should never become nil after being initialized, but you never know
@@ -58,10 +58,13 @@ func (a *Action) Update(session *revoltgo.Session, msg tea.Msg) tea.Cmd {
 				if err != nil {
 					log.Writer.Error("failed to fetch server", "error", err, "id", serverItm.id)
 					a.selectionErr = true
+					return nil
 				}
+				// pass the server to the app data broker
 			} else {
 				log.Writer.Warn("failed to cast item to server item", "item", a.list.SelectedItem())
 				a.selectionErr = true
+				return nil
 			}
 		}
 	}
@@ -102,7 +105,7 @@ func castServersToItems(servers []*revoltgo.Server) []list.Item {
 }
 
 func (a *Action) tryInitialize() bool {
-	w, h := terminal.Width(), terminal.Height()
+	w, h := broker.Width(), broker.Height()
 	if !cache.Ready() || w == 0 || h == 0 {
 		return false
 	}

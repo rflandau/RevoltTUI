@@ -11,6 +11,7 @@ import (
 	"revolt_tui/credentials"
 	"revolt_tui/log"
 	"revolt_tui/modes"
+	"revolt_tui/modes/server"
 	serverselection "revolt_tui/modes/serverSelection"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -68,6 +69,7 @@ func main() {
 
 	// register modes
 	modes.Add(modes.ServerSelection, &serverselection.Action{})
+	modes.Add(modes.Server, &server.Action{})
 
 	/*func(session *revoltgo.Session, r *revoltgo.EventReady) {
 		log.Writer.Info("Ready to handle commands from %v user(s) across %d servers from %d channels",

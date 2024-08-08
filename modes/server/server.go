@@ -36,7 +36,7 @@ var _ modes.Action = &Action{}
 //#region Action Iface Impl
 
 // Do we want to cede control to another mode?
-func (a *Action) ChangeMode() (bool, Mode) {
+func (a *Action) ChangeMode() (bool, modes.Mode) {
 	return false, modes.Server
 }
 

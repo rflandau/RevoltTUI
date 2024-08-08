@@ -15,15 +15,22 @@ type Action struct {
 	list         list.Model
 	initialized  bool
 	selectionErr bool // an error occurred on last input
+	newMode      modes.Mode
 }
 
 // Is this mode ready to change? If so, to what mode?
 func (a *Action) ChangeMode() (bool, modes.Mode) {
-	return false, modes.ServerSelection
+	if a.newMode == modes.ServerSelection { // do not change mode
+		return false, modes.ServerSelection
+	}
+	return true, a.newMode
 }
 
 // On user first entering this mode.
 func (a *Action) Enter() (bool, tea.Cmd) {
+	// Do not pass control off this mode.
+	a.newMode = modes.ServerSelection
+
 	var cmd tea.Cmd
 	if a.initialized {
 		// if we have already been initialized, update current values
@@ -61,6 +68,9 @@ func (a *Action) Update(session *revoltgo.Session, msg tea.Msg) tea.Cmd {
 					return nil
 				}
 				// pass the server to the app data broker
+				broker.SetServer(server)
+				// allow the server mode to take over
+				a.newMode = modes.Server
 			} else {
 				log.Writer.Warn("failed to cast item to server item", "item", a.list.SelectedItem())
 				a.selectionErr = true

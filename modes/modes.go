@@ -20,7 +20,10 @@ import (
 type Mode uint8
 
 const (
+	// Selecting a server to interact with from all available servers
 	ServerSelection Mode = iota
+	// Interacting with a selected server
+	Server
 )
 
 type Action interface {

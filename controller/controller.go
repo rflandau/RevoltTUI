@@ -59,6 +59,8 @@ func (ctl controller) Init() tea.Cmd {
 }
 
 func (ctl controller) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	log.Writer.Debug("updating", "msg", msg)
+
 	if ctl.quitting {
 		return ctl, nil
 	}

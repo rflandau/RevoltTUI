@@ -20,9 +20,7 @@ import (
 )
 
 const (
-	filePermission        = 0600
-	dirPermission         = 0700
-	tokenFileName  string = "token"
+	tokenFileName string = "token"
 )
 
 // main's init just defines flags

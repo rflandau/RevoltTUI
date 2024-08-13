@@ -56,13 +56,17 @@ func main() {
 			return
 		}
 		// write the token from the session so we do not need to prompt next time
-		tokenFile, err := os.Create(path.Join(cfgdir.Get(), tokenFileName))
+		tknpth := path.Join(cfgdir.Get(), tokenFileName)
+		log.Writer.Debugf("creating token at path '%v'", tknpth)
+		tokenFile, err := os.OpenFile(tknpth, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 		if err != nil {
 			log.Writer.Warn("failed to create token file", "error", err)
 		} else {
 			tokenFile.WriteString(session.Token)
 		}
-		tokenFile.Close()
+		if tokenFile != nil {
+			tokenFile.Close()
+		}
 	}
 
 	// register modes

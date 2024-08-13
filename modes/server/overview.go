@@ -35,8 +35,8 @@ func (o *ovrvw) Enter(s *revoltgo.Server) {
 	sb.WriteString(centerSty.Bold(true).Render(s.Name) + "\n")
 	sb.WriteString(centerSty.Italic(true).Render(s.Description) + "\n")
 	sb.WriteRune('\n')
-	sb.WriteString("Owner:" + s.Owner)
-	sb.WriteString(fmt.Sprintf("ID: %v", s.ID))
+	sb.WriteString(fmt.Sprintf("Owner: %v\n", s.Owner))
+	sb.WriteString(fmt.Sprintf("ID: %v\n", s.ID))
 
 	o.compiledOverview = sb.String()
 

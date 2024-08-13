@@ -67,7 +67,7 @@ func main() {
 
 	// register modes
 	modes.Add(modes.ServerSelection, &serverselection.Action{})
-	modes.Add(modes.Server, &server.Action{})
+	modes.Add(modes.Server, server.New())
 
 	/*func(session *revoltgo.Session, r *revoltgo.EventReady) {
 		log.Writer.Info("Ready to handle commands from %v user(s) across %d servers from %d channels",

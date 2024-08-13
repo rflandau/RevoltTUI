@@ -24,14 +24,8 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/sentinelb51/revoltgo"
-)
-
-type tabConst uint8
-
-const (
-	channels tabConst = iota
-	chat
 )
 
 type Action struct {
@@ -39,16 +33,25 @@ type Action struct {
 
 	// tab management
 	activeTab tabConst
-	tabs      []string
-
-	// tab data structs
-	channels tabChannels
+	tabs      []tab
+	tabCount  uint8 // set on startup, as tab count (enabled & disabled) should not change
 }
 
 var _ modes.Action = &Action{}
 
 func New() *Action {
-	return &Action{}
+	a := &Action{}
+	a.tabs = []tab{
+		&ovrvw{},
+		&chnl{},
+	}
+	a.tabCount = uint8(len(a.tabs))
+	// check that we have an enumeration for each tab; this must be updated whenever a new tab enumeration is appended
+	if a.tabCount != lastTabConst {
+		log.Writer.Fatal("tab array count does not match enumeration count", "tab count", a.tabCount, "tabs", a.tabs, "last enumeration", lastTabConst)
+	}
+
+	return a
 }
 
 //#region Action Iface Impl
@@ -66,32 +69,34 @@ func (a *Action) Enter() (success bool, init tea.Cmd) {
 		return false, nil
 	}
 
-	// generate each tab
-	a.channels = initTabChannels(a.server) // channels
-	// TODO // chat
+	// initialize each tab
+	for _, tb := range a.tabs {
+		tb.Enter(a.server)
+	}
+
+	// ensure we start on the always-enabled overview tab
+	a.activeTab = overview
 
 	return true, textinput.Blink
 }
 
 func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
-	var (
-		cmd    tea.Cmd
-		newTab tabConst = a.activeTab
-	)
-	switch a.activeTab {
-	case channels:
-		cmd, newTab = a.channels.update(msg)
-	default:
-		log.Writer.Warn("unknown active tab, restoring to channels", "active tab", a.activeTab)
+	// consume tab cycle keys
+	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		switch keyMsg.Type {
+		case tea.KeyTab:
+			a.nextTab()
+			return textinput.Blink
+		case tea.KeyShiftTab:
+			a.previousTab()
+			return textinput.Blink
+		} // all other inputs are unhandled
 	}
 
-	if newTab != a.activeTab {
-		// change to new tab
-		// TODO
-	}
+	var cmd tea.Cmd
+	cmd, a.activeTab = a.tabs[a.activeTab].Update(msg)
 
 	return cmd
-
 }
 
 // Displays the current server, collapsing the channel column automatically if a channel has been
@@ -99,25 +104,59 @@ func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
 func (a *Action) View() string {
 	var sb strings.Builder
 	sb.WriteString(a.drawTabs())
-	switch a.activeTab {
-	case channels:
-		a.channels.view()
-	}
+	sb.WriteString(a.tabs[a.activeTab].View())
 	return sb.String()
 }
+
+func tabBorderWithBottom(left, middle, right string) lipgloss.Border {
+	border := lipgloss.RoundedBorder()
+	border.BottomLeft = left
+	border.Bottom = middle
+	border.BottomRight = right
+	return border
+}
+
+var (
+	inactiveTabBorder = tabBorderWithBottom("┴", "─", "┴")
+	activeTabBorder   = tabBorderWithBottom("┘", " ", "└")
+	highlightColor    = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
+	inactiveTabStyle  = lipgloss.NewStyle().Border(inactiveTabBorder, true).BorderForeground(highlightColor).Padding(0, 1)
+	activeTabStyle    = inactiveTabStyle.Border(activeTabBorder, true)
+)
 
 // helper function for View.
 // Draws the tabs in their current state.
 func (a *Action) drawTabs() string {
-	// draw each tab
 
-	// if channels tab does not have a channel selected, do not display the chat tab
-	if a.channels.activeChannel == nil {
-		//TODO
+	var renderedTabs []string
+
+	// draw each tab
+	for i, t := range a.tabs {
+		var style lipgloss.Style = inactiveTabStyle
+		isFirst, isLast, isActive := i == 0, i == int(a.tabCount)-1, i == int(a.activeTab)
+		if isActive {
+			style = activeTabStyle
+		}
+		border, _, _, _, _ := style.GetBorder()
+		if isFirst && isActive {
+			border.BottomLeft = "│"
+		} else if isFirst && !isActive {
+			border.BottomLeft = "├"
+		} else if isLast && isActive {
+			border.BottomRight = "│"
+		} else if isLast && !isActive {
+			border.BottomRight = "┤"
+		}
+		style = style.Border(border)
+		renderedTabs = append(renderedTabs, style.Render(t.Name()))
+
+		if !t.Enabled() { // do not display disabled tabs
+			continue
+		}
 	}
 
 	// conjoin the drawn tabs
-	return ""
+	return lipgloss.JoinHorizontal(lipgloss.Top, renderedTabs...)
 }
 
 //#endregion

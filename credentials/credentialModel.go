@@ -72,9 +72,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	}
 
-	// check for enter key to attempt to submit the credentials and generate a session
-	// TODO
-
 	var cmd tea.Cmd
 	if m.sel == email {
 		m.emailTI, cmd = m.emailTI.Update(msg)

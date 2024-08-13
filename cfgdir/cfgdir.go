@@ -50,7 +50,7 @@ func trySpawnDir(base string) (subDirPath string, err error) {
 	}
 	// create the subdirectory
 	subdir := path.Join(base, SubDirName)
-	if err := os.MkdirAll(subdir, 0777); err != nil {
+	if err := os.MkdirAll(subdir, 0700); err != nil {
 		return "", err
 	}
 

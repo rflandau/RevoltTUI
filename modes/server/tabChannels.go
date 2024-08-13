@@ -15,29 +15,36 @@ import (
  * This file handles the operation and components of the channels tab.
  */
 
-type tabChannels struct {
+type chnl struct {
 	list          list.Model
 	activeChannel *revoltgo.Channel
 	selectionErr  string
 }
 
-// Initializes the list of channels
-func initTabChannels(server *revoltgo.Server) tabChannels {
-	tc := tabChannels{}
-
-	var itms []list.Item = make([]list.Item, len(server.Channels))
-	for i, ch := range server.Channels {
-		itms[i] = channelItem{name: ch}
-	}
-
-	tc.list = list.New(itms, list.NewDefaultDelegate(), broker.Width(), broker.Height())
-
-	return tc
-}
+var _ tab = &chnl{}
 
 const changeChannelErrString string = "an error has occurred changing channel to "
 
-func (tc tabChannels) update(msg tea.Msg) (tea.Cmd, tabConst) {
+func (tc *chnl) Name() string {
+	return "channels"
+}
+
+func (tc *chnl) Enabled() bool {
+	return true
+}
+
+func (c *chnl) Enter(s *revoltgo.Server) {
+	// s is nil checked prior to call
+	var itms []list.Item = make([]list.Item, len(s.Channels))
+	for i, ch := range s.Channels {
+		itms[i] = channelItem{name: ch}
+	}
+
+	c.list = list.New(itms, list.NewDefaultDelegate(), broker.Width(), broker.Height())
+
+}
+
+func (tc *chnl) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 	// window size updates are handled by the main server Update; only need to check for keymsg
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.Type == tea.KeyEnter {
 		baseItm := tc.list.SelectedItem()
@@ -62,7 +69,7 @@ func (tc tabChannels) update(msg tea.Msg) (tea.Cmd, tabConst) {
 	return cmd, channels
 }
 
-func (tc tabChannels) view() string {
+func (tc *chnl) View() string {
 	var sb strings.Builder
 	sb.WriteString(tc.selectionErr + "\n")
 	sb.WriteString(tc.list.View())

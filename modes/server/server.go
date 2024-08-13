@@ -27,10 +27,10 @@ import (
 	"github.com/sentinelb51/revoltgo"
 )
 
-type tab uint8
+type tabConst uint8
 
 const (
-	channel tab = iota
+	channels tabConst = iota
 	chat
 )
 
@@ -38,7 +38,7 @@ type Action struct {
 	server *revoltgo.Server
 
 	// tab management
-	activeTab tab
+	activeTab tabConst
 	tabs      []string
 
 	// tab data structs
@@ -46,6 +46,10 @@ type Action struct {
 }
 
 var _ modes.Action = &Action{}
+
+func New() *Action {
+	return &Action{}
+}
 
 //#region Action Iface Impl
 
@@ -62,15 +66,31 @@ func (a *Action) Enter() (success bool, init tea.Cmd) {
 		return false, nil
 	}
 
-	// prepare the list of channels for the channel modal
-	for i, ch := range a.server.Channels {
-
-	}
+	// generate each tab
+	a.channels = initTabChannels(a.server) // channels
+	// TODO // chat
 
 	return true, textinput.Blink
 }
 
 func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
+	var (
+		cmd    tea.Cmd
+		newTab tabConst = a.activeTab
+	)
+	switch a.activeTab {
+	case channels:
+		cmd, newTab = a.channels.update(msg)
+	default:
+		log.Writer.Warn("unknown active tab, restoring to channels", "active tab", a.activeTab)
+	}
+
+	if newTab != a.activeTab {
+		// change to new tab
+		// TODO
+	}
+
+	return cmd
 
 }
 
@@ -79,15 +99,25 @@ func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
 func (a *Action) View() string {
 	var sb strings.Builder
 	sb.WriteString(a.drawTabs())
+	switch a.activeTab {
+	case channels:
+		a.channels.view()
+	}
+	return sb.String()
 }
 
 // helper function for View.
 // Draws the tabs in their current state.
 func (a *Action) drawTabs() string {
+	// draw each tab
+
 	// if channels tab does not have a channel selected, do not display the chat tab
 	if a.channels.activeChannel == nil {
 		//TODO
 	}
+
+	// conjoin the drawn tabs
+	return ""
 }
 
 //#endregion

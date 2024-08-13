@@ -103,7 +103,7 @@ func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
 // selected and the terminal is not wide enough.
 func (a *Action) View() string {
 	var sb strings.Builder
-	sb.WriteString(a.drawTabs())
+	sb.WriteString(a.drawTabs() + "\n")
 	sb.WriteString(a.tabs[a.activeTab].View())
 	return sb.String()
 }
@@ -127,8 +127,11 @@ var (
 // helper function for View.
 // Draws the tabs in their current state.
 func (a *Action) drawTabs() string {
-
-	var renderedTabs []string
+	var (
+		renderedTabs []string
+		margin       int = 2
+		tabWidth     int = (broker.Width() - (margin*int(a.tabCount) - 1)) / int(a.tabCount)
+	)
 
 	// draw each tab
 	for i, t := range a.tabs {
@@ -137,6 +140,7 @@ func (a *Action) drawTabs() string {
 		if isActive {
 			style = activeTabStyle
 		}
+		style.Width(tabWidth)
 		border, _, _, _, _ := style.GetBorder()
 		if isFirst && isActive {
 			border.BottomLeft = "│"

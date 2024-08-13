@@ -15,6 +15,8 @@ const (
 	chat
 )
 
+const lastTabConst = chat // used by new to validate tab struct count
+
 // represents a single tab
 type tab interface {
 	Name() string  // user-facing name of the tab

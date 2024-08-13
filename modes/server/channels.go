@@ -1,7 +1,6 @@
 package server
 
 import (
-	"revolt_tui/broker"
 	"revolt_tui/log"
 	"strings"
 
@@ -33,14 +32,14 @@ func (tc *chnl) Enabled() bool {
 	return true
 }
 
-func (c *chnl) Enter(s *revoltgo.Server) {
+func (c *chnl) Init(s *revoltgo.Server, width, height int) {
 	// s is nil checked prior to call
 	var itms []list.Item = make([]list.Item, len(s.Channels))
 	for i, ch := range s.Channels {
 		itms[i] = channelItem{name: ch}
 	}
 
-	c.list = list.New(itms, list.NewDefaultDelegate(), broker.Width(), broker.Height())
+	c.list = list.New(itms, list.NewDefaultDelegate(), width, height)
 
 }
 

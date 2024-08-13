@@ -69,9 +69,12 @@ func (a *Action) Enter() (success bool, init tea.Cmd) {
 		return false, nil
 	}
 
+	// determine the margins we need to reserve
+	var w, h int = broker.Width(), broker.Height() - lipgloss.Height(a.drawTabs()) - 3
+
 	// initialize each tab
 	for _, tb := range a.tabs {
-		tb.Enter(a.server)
+		tb.Init(a.server, w, h)
 	}
 
 	// ensure we start on the always-enabled overview tab
@@ -130,7 +133,7 @@ func (a *Action) drawTabs() string {
 	var (
 		renderedTabs []string
 		margin       int = 2
-		tabWidth     int = (broker.Width() - (margin*int(a.tabCount) - 1)) / int(a.tabCount)
+		tabWidth     int = (broker.Width() - (margin * int(a.tabCount))) / int(a.tabCount)
 	)
 
 	// draw each tab

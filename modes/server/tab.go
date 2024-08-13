@@ -23,7 +23,7 @@ type tab interface {
 	Enabled() bool // is this tab currently accessible?
 	// called on every tab when *server* is first entered, NOT when the tab is swapped to
 	// provides the server so each enter does not have to nil check broker
-	Enter(*revoltgo.Server)
+	Init(server *revoltgo.Server, width, height int)
 	Update(msg tea.Msg) (tea.Cmd, tabConst)
 	View() string
 }

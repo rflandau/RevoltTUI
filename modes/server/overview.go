@@ -25,7 +25,7 @@ func (*ovrvw) Enabled() bool {
 	return true
 }
 
-func (o *ovrvw) Enter(s *revoltgo.Server) {
+func (o *ovrvw) Init(s *revoltgo.Server, _, _ int) {
 	// s is nil checked prior to call
 
 	centerSty := lipgloss.NewStyle().AlignHorizontal(lipgloss.Center)

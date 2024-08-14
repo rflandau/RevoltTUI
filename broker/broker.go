@@ -42,6 +42,27 @@ func Height() int {
 
 //#endregion tty dimensions
 
+//#region session
+
+var Session *revoltgo.Session
+
+// captures the pointer to this session, sets up event handlers, and then open the session for use
+func InitializeSession(session *revoltgo.Session) {
+	Session = session
+	// attach message handler
+	session.AddHandler(func(session *revoltgo.Session, r *revoltgo.EventMessage) {
+		log.Writer.Info("A message has arrived", "msg", r)
+		// TODO display as a top-level notification if not in a current viewing window
+	})
+
+	// open a websocket connection
+	if err := session.Open(); err != nil {
+		log.Writer.Error("failed to open websocket connection", "error", err)
+	}
+}
+
+//#endregion session
+
 //#region current server
 
 var curServer *revoltgo.Server

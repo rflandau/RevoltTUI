@@ -36,7 +36,11 @@ func (c *chnl) Init(s *revoltgo.Server, width, height int) {
 	// s is nil checked prior to call
 	var itms []list.Item = make([]list.Item, len(s.Channels))
 	for i, ch := range s.Channels {
-		itms[i] = channelItem{name: ch}
+		itms[i] = channelItem{
+			name:        ch,
+			description: "",
+			channel:     nil,
+		}
 	}
 
 	c.list = list.New(itms, list.NewDefaultDelegate(), width, 30)

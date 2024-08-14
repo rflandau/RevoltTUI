@@ -14,7 +14,6 @@ import (
 	"revolt_tui/log"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/sentinelb51/revoltgo"
 )
 
 type Mode uint8
@@ -31,7 +30,7 @@ type Action interface {
 	ChangeMode() (bool, Mode)
 	// Called after ChangeMode, to allow the new mode to ready itself
 	Enter() (success bool, init tea.Cmd)
-	Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd
+	Update(msg tea.Msg) tea.Cmd
 	View() string
 }
 

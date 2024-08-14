@@ -8,34 +8,19 @@ import (
 	"revolt_tui/modes"
 
 	tea "github.com/charmbracelet/bubbletea"
-
-	"github.com/sentinelb51/revoltgo"
 )
 
 type controller struct {
 	quitting   bool
 	mode       modes.Mode
 	curAction  modes.Action
-	session    *revoltgo.Session
 	initialCmd tea.Cmd
 }
 
 // model needs a logged in Client to proceed
-func Initial(session *revoltgo.Session) controller {
+func Initial() controller {
 	model := controller{
-		mode:    modes.ServerSelection,
-		session: session,
-	}
-
-	// attach message handler
-	model.session.AddHandler(func(session *revoltgo.Session, r *revoltgo.EventMessage) {
-		log.Writer.Info("A message has arrived", "msg", r)
-		// TODO display as a top-level notification if not in a current viewing window
-	})
-
-	// open a websocket connection
-	if err := session.Open(); err != nil {
-		log.Writer.Error("failed to open websocket connection", "error", err)
+		mode: modes.ServerSelection,
 	}
 
 	// enter the starter (server selection) mode
@@ -79,7 +64,7 @@ func (ctl controller) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		broker.SetDimensions(WSMsg.Width, WSMsg.Height)
 	}
 
-	var cmd tea.Cmd = ctl.curAction.Update(ctl.session, msg)
+	var cmd tea.Cmd = ctl.curAction.Update(msg)
 
 	// check for a mode change
 	if chg, newMode := ctl.curAction.ChangeMode(); chg {

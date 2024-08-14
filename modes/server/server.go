@@ -85,7 +85,7 @@ func (a *Action) Enter() (success bool, init tea.Cmd) {
 	return true, textinput.Blink
 }
 
-func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
+func (a *Action) Update(msg tea.Msg) tea.Cmd {
 	// consume tab cycle keys
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		switch keyMsg.Type {

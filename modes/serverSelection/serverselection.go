@@ -48,7 +48,7 @@ func (a *Action) Enter() (bool, tea.Cmd) {
 	return true, cmd
 }
 
-func (a *Action) Update(session *revoltgo.Session, msg tea.Msg) tea.Cmd {
+func (a *Action) Update(msg tea.Msg) tea.Cmd {
 	if !a.initialized {
 		if !a.tryInitialize() { //retry initialization
 			return nil
@@ -60,7 +60,7 @@ func (a *Action) Update(session *revoltgo.Session, msg tea.Msg) tea.Cmd {
 		if keyMsg.Type == tea.KeyEnter { // check for enter key
 			// fetch the chosen server
 			if serverItm, ok := a.list.SelectedItem().(serverItem); ok {
-				server, err := session.Server(serverItm.id)
+				server, err := broker.Session.Server(serverItm.id)
 				if err != nil {
 					log.Writer.Error("failed to fetch server", "error", err, "id", serverItm.id)
 					a.selectionErr = true

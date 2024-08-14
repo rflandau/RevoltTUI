@@ -65,7 +65,7 @@ func (a *Action) ChangeMode() (bool, modes.Mode) {
 
 // Control was just passed to us, initialize as need be.
 func (a *Action) Enter() (success bool, init tea.Cmd) {
-	a.server = broker.GetServer()
+	a.server = broker.GetCurrentServer()
 	if a.server == nil {
 		log.Writer.Errorf("control passed to server mode, but no server has been declared by Broker")
 		return false, nil

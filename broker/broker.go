@@ -6,8 +6,10 @@
 package broker
 
 import (
+	"revolt_tui/log"
 	"sync"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sentinelb51/revoltgo"
 )
 
@@ -42,22 +44,60 @@ func Height() int {
 
 //#region current server
 
-var server *revoltgo.Server
+var curServer *revoltgo.Server
 var serverLock sync.Mutex
 
 // Updates the current server the user is interacting with.
-func SetServer(svr *revoltgo.Server) {
+func SetCurrentServer(svr *revoltgo.Server) {
 	serverLock.Lock()
-	server = svr
+	curServer = svr
 	serverLock.Unlock()
 }
 
 // Returns the current server the user is interacting with.
 // If the user is not currently interacting with a server, this may be nil.
-func GetServer() *revoltgo.Server {
+func GetCurrentServer() *revoltgo.Server {
 	serverLock.Lock()
 	defer serverLock.Unlock()
-	return server
+	return curServer
 }
 
 //#endregion current server
+
+//#region cache
+
+var cache *revoltgo.EventReady
+var ready bool // cache has been populated at least once
+var cacheMTX sync.RWMutex
+
+// updates the cache on Ready event; registered during the AddHandler
+func OnEventReadyFunc(_ *revoltgo.Session, r *revoltgo.EventReady) {
+	cacheMTX.Lock()
+
+	isCacheNil := cache == nil
+
+	go log.Writer.Debug("Session is ready", "nil cache?", isCacheNil, "EventReady", r)
+	cache = r
+	ready = true
+	cacheMTX.Unlock()
+}
+
+func CacheReady() bool {
+	return ready
+}
+
+func Servers() []*revoltgo.Server {
+	if cache == nil {
+		return nil
+	}
+	cacheMTX.RLock()
+	defer cacheMTX.RUnlock()
+	// TODO may need to duplicate cache.Servers to prevent data destruction by callers
+	return cache.Servers
+}
+
+type CacheUpdatedMsg struct {
+	tea.Msg
+}
+
+//#endregion cache

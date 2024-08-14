@@ -2,7 +2,6 @@ package serverselection
 
 import (
 	"revolt_tui/broker"
-	"revolt_tui/cache"
 	"revolt_tui/log"
 	"revolt_tui/modes"
 
@@ -39,7 +38,7 @@ func (a *Action) Enter() (bool, tea.Cmd) {
 
 		// regenerate servers list as []list.Item
 		// the server list should never become nil after being initialized, but you never know
-		if servers := cache.Servers(); servers != nil {
+		if servers := broker.Servers(); servers != nil {
 			cmd = a.list.SetItems(castServersToItems(servers))
 		} // else, do nothing
 
@@ -68,7 +67,7 @@ func (a *Action) Update(session *revoltgo.Session, msg tea.Msg) tea.Cmd {
 					return nil
 				}
 				// pass the server to the app data broker
-				broker.SetServer(server)
+				broker.SetCurrentServer(server)
 				// allow the server mode to take over
 				a.newMode = modes.Server
 			} else {
@@ -116,13 +115,13 @@ func castServersToItems(servers []*revoltgo.Server) []list.Item {
 
 func (a *Action) tryInitialize() bool {
 	w, h := broker.Width(), broker.Height()
-	if !cache.Ready() || w == 0 || h == 0 {
+	if !broker.CacheReady() || w == 0 || h == 0 {
 		return false
 	}
 	log.Writer.Debug("initializing server selection...")
 
 	// if we have not been initialized, attempt to initialize
-	a.list = list.New(castServersToItems(cache.Servers()), list.NewDefaultDelegate(), w, h)
+	a.list = list.New(castServersToItems(broker.Servers()), list.NewDefaultDelegate(), w, h)
 	a.initialized = true
 
 	return true

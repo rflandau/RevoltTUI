@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
-	"revolt_tui/cache"
+	"revolt_tui/broker"
 	"revolt_tui/cfgdir"
 	"revolt_tui/controller"
 	"revolt_tui/credentials"
@@ -110,9 +110,9 @@ func main() {
 	// attach ready handler to our revoltgo session so we can inject messages into bubble tea
 	session.AddHandler(func(session *revoltgo.Session, r *revoltgo.EventReady) {
 		// update the cache
-		cache.OnEventReadyFunc(session, r)
+		broker.OnEventReadyFunc(session, r)
 		log.Writer.Info("cache updated")
-		p.Send(cache.CacheUpdatedMsg{})
+		p.Send(broker.CacheUpdatedMsg{})
 	})
 
 	_, err := p.Run()

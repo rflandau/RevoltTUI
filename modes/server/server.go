@@ -72,7 +72,7 @@ func (a *Action) Enter() (success bool, init tea.Cmd) {
 	}
 
 	// determine the margins we need to reserve
-	var w, h int = broker.Width(), broker.Height() - lipgloss.Height(a.drawTabs()) - 3
+	var w, h int = broker.Width(), broker.Height() - (lipgloss.Height(a.drawTabs()) + 2)
 
 	// initialize each tab
 	for _, tb := range a.tabs {
@@ -98,20 +98,45 @@ func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
 		} // all other inputs are unhandled
 	}
 
+	// window size messages must be passed to every tab, lest they lost if a tab is unfocused
+	if WSMsg, ok := msg.(tea.WindowSizeMsg); ok {
+		// modify the height and width to fit within our content window beneath the tabs
+		WSMsg.Width -= 2                                   // TODO calculate required margin
+		WSMsg.Height = (lipgloss.Height(a.drawTabs()) + 2) // TODO extract to save cycles
+
+		var (
+			cmd    tea.Cmd
+			newTab tabConst
+		)
+		for i, tb := range a.tabs {
+			// NOTE: results are thrown away for all but the active tab
+			c, t := tb.Update(WSMsg)
+			if i == int(a.activeTab) {
+				cmd = c
+				newTab = t
+			}
+		}
+		a.activeTab = newTab
+		return cmd
+	}
+
 	var cmd tea.Cmd
 	cmd, a.activeTab = a.tabs[a.activeTab].Update(msg)
 
 	return cmd
 }
 
+var windowStyle = lipgloss.NewStyle().BorderForeground(colors.TabBorderForeground).Padding(2, 0).Align(lipgloss.Center).Border(lipgloss.NormalBorder()).UnsetBorderTop()
+
 // Displays the current server, collapsing the channel column automatically if a channel has been
 // selected and the terminal is not wide enough.
 func (a *Action) View() string {
 	var sb strings.Builder
-	sb.WriteString(a.drawTabs() + "\n")
+	tabs := a.drawTabs()
+	sb.WriteString(tabs + "\n")
 	// box the entire display
 	content := a.tabs[a.activeTab].View()
-	sb.WriteString(content)
+	sb.WriteString(windowStyle.Width(broker.Width()).Height(broker.Height() - (lipgloss.Height(tabs) + 1)).Render(content))
 	return sb.String()
 }
 

@@ -39,7 +39,7 @@ func (c *chnl) Init(s *revoltgo.Server, width, height int) {
 		itms[i] = channelItem{name: ch}
 	}
 
-	c.list = list.New(itms, list.NewDefaultDelegate(), width, height)
+	c.list = list.New(itms, list.NewDefaultDelegate(), width, 30)
 
 }
 

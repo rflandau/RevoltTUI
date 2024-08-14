@@ -1,6 +1,7 @@
 package server
 
 import (
+	"revolt_tui/broker"
 	"revolt_tui/log"
 	"strings"
 
@@ -35,12 +36,18 @@ func (tc *chnl) Enabled() bool {
 func (c *chnl) Init(s *revoltgo.Server, width, height int) {
 	// s is nil checked prior to call
 	var itms []list.Item = make([]list.Item, len(s.Channels))
-	for i, ch := range s.Channels {
-		itms[i] = channelItem{
-			name:        ch,
-			description: "",
-			channel:     nil,
+	for i, chID := range s.Channels {
+		ci := channelItem{channelID: chID}
+		if channel, err := broker.Session.Channel(chID); err != nil {
+			log.Writer.Warn("failed to fetch channel", "id", chID, "error", err)
+			ci.name = "[unknown]"
+			ci.description = "failed to retrieve channel information"
+		} else {
+			ci.name = channel.Name
+			ci.description = channel.Description
+			ci.channel = channel
 		}
+		itms[i] = ci
 	}
 
 	c.list = list.New(itms, list.NewDefaultDelegate(), width, 30)
@@ -84,6 +91,7 @@ func (tc *chnl) View() string {
 type channelItem struct {
 	name        string
 	description string
+	channelID   string
 	channel     *revoltgo.Channel
 }
 

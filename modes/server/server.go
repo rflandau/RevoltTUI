@@ -20,6 +20,8 @@ import (
 	"revolt_tui/broker"
 	"revolt_tui/log"
 	"revolt_tui/modes"
+	"revolt_tui/stylesheet"
+	"revolt_tui/stylesheet/colors"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -107,24 +109,15 @@ func (a *Action) Update(s *revoltgo.Session, msg tea.Msg) tea.Cmd {
 func (a *Action) View() string {
 	var sb strings.Builder
 	sb.WriteString(a.drawTabs() + "\n")
-	sb.WriteString(a.tabs[a.activeTab].View())
+	// box the entire display
+	content := a.tabs[a.activeTab].View()
+	sb.WriteString(content)
 	return sb.String()
 }
 
-func tabBorderWithBottom(left, middle, right string) lipgloss.Border {
-	border := lipgloss.RoundedBorder()
-	border.BottomLeft = left
-	border.Bottom = middle
-	border.BottomRight = right
-	return border
-}
-
 var (
-	inactiveTabBorder = tabBorderWithBottom("┴", "─", "┴")
-	activeTabBorder   = tabBorderWithBottom("┘", " ", "└")
-	highlightColor    = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
-	inactiveTabStyle  = lipgloss.NewStyle().Border(inactiveTabBorder, true).BorderForeground(highlightColor).Padding(0, 1)
-	activeTabStyle    = inactiveTabStyle.Border(activeTabBorder, true)
+	inactiveTabStyle = lipgloss.NewStyle().Border(stylesheet.TabBorders.Inactive, true).BorderForeground(colors.TabBorderForeground).Padding(0, 1)
+	activeTabStyle   = inactiveTabStyle.Border(stylesheet.TabBorders.Active, true)
 )
 
 // helper function for View.

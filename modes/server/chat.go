@@ -117,8 +117,12 @@ func (cht *chatTab) Init(s *revoltgo.Server, width, height int) {
 		}
 	}()
 
-	cht.msgView = viewport.New(width, height)
 	cht.newMessageBox = textarea.New()
+	cht.newMessageBox.MaxHeight = 4
+
+	// include height margins in the viewport
+	cht.msgView = viewport.New(width, height-cht.newMessageBox.MaxHeight-1)
+
 }
 
 func (cht *chatTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {

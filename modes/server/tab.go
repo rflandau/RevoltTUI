@@ -10,12 +10,12 @@ import (
 type tabConst = uint8
 
 const (
-	overview tabConst = iota
-	channels
-	chat
+	OVERVIEW tabConst = iota
+	CHANNELS
+	CHAT
 )
 
-const lastTabConst = chat // used by new to validate tab struct count
+const lastTabConst = CHAT // used by new to validate tab struct count
 
 // represents a single tab
 type tab interface {

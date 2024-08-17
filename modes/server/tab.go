@@ -1,7 +1,10 @@
 package server
 
 import (
+	"revolt_tui/broker"
+
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/sentinelb51/revoltgo"
 )
 
@@ -56,4 +59,51 @@ func (a *Action) previousTab() {
 			break
 		}
 	}
+}
+
+// helper function for View.
+// Draws the tabs in their current state.
+func (a *Action) drawTabs() string {
+	var (
+		renderedTabs []string
+		margin       int = 2
+		tabWidth     int = (broker.Width() - (margin * int(a.tabCount))) / int(a.tabCount)
+	)
+
+	// draw each tab
+	for i, t := range a.tabs {
+		var style lipgloss.Style = inactiveTabStyle
+		isFirst, isLast, isActive := i == 0, i == int(a.tabCount)-1, i == int(a.activeTab)
+		if isActive {
+			style = activeTabStyle
+		}
+		style.Width(tabWidth)
+		border, _, _, _, _ := style.GetBorder()
+		if isFirst && isActive {
+			border.BottomLeft = "│"
+		} else if isFirst && !isActive {
+			border.BottomLeft = "├"
+		} else if isLast && isActive {
+			border.BottomRight = "│"
+		} else if isLast && !isActive {
+			border.BottomRight = "┤"
+		}
+		style = style.Border(border)
+
+		var nameTxt string
+		if isActive {
+			nameTxt = activeTabTextStyle.Render(t.Name())
+		} else {
+			nameTxt = t.Name()
+		}
+
+		renderedTabs = append(renderedTabs, style.Render(nameTxt))
+
+		if !t.Enabled() { // do not display disabled tabs
+			continue
+		}
+	}
+
+	// conjoin the drawn tabs
+	return lipgloss.JoinHorizontal(lipgloss.Top, renderedTabs...)
 }

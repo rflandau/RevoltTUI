@@ -9,23 +9,23 @@ import (
 	"github.com/sentinelb51/revoltgo"
 )
 
-type ovrvw struct {
+type overviewTab struct {
 	compiledOverview string
 }
 
-var _ tab = &ovrvw{}
+var _ tab = &overviewTab{}
 
 // user-facing name of the tab
-func (*ovrvw) Name() string {
+func (*overviewTab) Name() string {
 	return "overview"
 }
 
 // is this tab currently accessible?
-func (*ovrvw) Enabled() bool {
+func (*overviewTab) Enabled() bool {
 	return true
 }
 
-func (o *ovrvw) Init(s *revoltgo.Server, _, _ int) {
+func (o *overviewTab) Init(s *revoltgo.Server, _, _ int) {
 	// s is nil checked prior to call
 
 	centerSty := lipgloss.NewStyle().AlignHorizontal(lipgloss.Center)
@@ -43,10 +43,10 @@ func (o *ovrvw) Init(s *revoltgo.Server, _, _ int) {
 	// TODO send out a goroutine to poll for overview updates
 }
 
-func (*ovrvw) Update(msg tea.Msg) (tea.Cmd, tabConst) {
+func (*overviewTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 	// no work to be done until server changes
-	return nil, overview
+	return nil, OVERVIEW
 }
-func (o *ovrvw) View() string {
+func (o *overviewTab) View() string {
 	return o.compiledOverview
 }

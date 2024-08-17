@@ -15,25 +15,25 @@ import (
  * This file handles the operation and components of the channels tab.
  */
 
-type chnl struct {
+type channelTab struct {
 	list          list.Model
 	activeChannel *revoltgo.Channel
 	selectionErr  string
 }
 
-var _ tab = &chnl{}
+var _ tab = &channelTab{}
 
 const changeChannelErrString string = "an error has occurred changing channel to "
 
-func (tc *chnl) Name() string {
+func (tc *channelTab) Name() string {
 	return "channels"
 }
 
-func (tc *chnl) Enabled() bool {
+func (tc *channelTab) Enabled() bool {
 	return true
 }
 
-func (c *chnl) Init(s *revoltgo.Server, width, height int) {
+func (c *channelTab) Init(s *revoltgo.Server, width, height int) {
 	// s is nil checked prior to call
 	var itms []list.Item = make([]list.Item, len(s.Channels))
 	for i, chID := range s.Channels {
@@ -54,7 +54,7 @@ func (c *chnl) Init(s *revoltgo.Server, width, height int) {
 
 }
 
-func (tc *chnl) Update(msg tea.Msg) (tea.Cmd, tabConst) {
+func (tc *channelTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 	// window size updates are handled by the main server Update; only need to check for keymsg
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.Type == tea.KeyEnter {
 		baseItm := tc.list.SelectedItem()
@@ -62,24 +62,24 @@ func (tc *chnl) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 		if !ok {
 			log.Writer.Warn("Failed to set active channel: base list item failed cast", "base item", baseItm)
 			tc.selectionErr = changeChannelErrString + baseItm.FilterValue()
-			return nil, channels
+			return nil, CHANNELS
 		}
 		if itm.channel == nil {
 			log.Writer.Warn("Failed to set active channel: cast item.channel is nil", "item", itm)
 			tc.selectionErr = changeChannelErrString + baseItm.FilterValue()
-			return nil, channels
+			return nil, CHANNELS
 		}
 		tc.activeChannel = itm.channel
 		// switch to chat channel
-		return textinput.Blink, chat
+		return textinput.Blink, CHAT
 	}
 
 	var cmd tea.Cmd
 	tc.list, cmd = tc.list.Update(msg)
-	return cmd, channels
+	return cmd, CHANNELS
 }
 
-func (tc *chnl) View() string {
+func (tc *channelTab) View() string {
 	var sb strings.Builder
 	sb.WriteString(tc.selectionErr + "\n")
 	sb.WriteString(tc.list.View())

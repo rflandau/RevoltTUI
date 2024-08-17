@@ -43,15 +43,19 @@ var _ modes.Action = &Action{}
 
 func New() *Action {
 	a := &Action{}
+	chtb := channelTab{}
 	a.tabs = []tab{
-		&ovrvw{},
-		&chnl{},
+		&overviewTab{},
+		&chtb,
+		LinkedChatTab(&chtb),
 	}
 	a.tabCount = uint8(len(a.tabs))
 	// check that we have an enumeration for each tab; this must be updated whenever a new tab enumeration is appended
-	if a.tabCount != lastTabConst {
+	if a.tabCount != lastTabConst+1 {
 		log.Writer.Fatal("tab array count does not match enumeration count", "tab count", a.tabCount, "tabs", a.tabs, "last enumeration", lastTabConst)
 	}
+
+	a.activeTab = OVERVIEW
 
 	return a
 }
@@ -80,7 +84,7 @@ func (a *Action) Enter() (success bool, init tea.Cmd) {
 	}
 
 	// ensure we start on the always-enabled overview tab
-	a.activeTab = overview
+	a.activeTab = OVERVIEW
 
 	return true, textinput.Blink
 }
@@ -141,8 +145,9 @@ func (a *Action) View() string {
 }
 
 var (
-	inactiveTabStyle = lipgloss.NewStyle().Border(stylesheet.TabBorders.Inactive, true).BorderForeground(colors.TabBorderForeground).Padding(0, 1)
-	activeTabStyle   = inactiveTabStyle.Border(stylesheet.TabBorders.Active, true)
+	inactiveTabStyle   = lipgloss.NewStyle().Border(stylesheet.TabBorders.Inactive, true).BorderForeground(colors.TabBorderForeground).Padding(0, 1)
+	activeTabStyle     = inactiveTabStyle.Border(stylesheet.TabBorders.Active, true)
+	activeTabTextStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#F00"))
 )
 
 // helper function for View.
@@ -173,7 +178,15 @@ func (a *Action) drawTabs() string {
 			border.BottomRight = "┤"
 		}
 		style = style.Border(border)
-		renderedTabs = append(renderedTabs, style.Render(t.Name()))
+
+		var nameTxt string
+		if isActive {
+			nameTxt = activeTabTextStyle.Render(t.Name())
+		} else {
+			nameTxt = t.Name()
+		}
+
+		renderedTabs = append(renderedTabs, style.Render(nameTxt))
 
 		if !t.Enabled() { // do not display disabled tabs
 			continue

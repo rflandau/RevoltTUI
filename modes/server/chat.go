@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"revolt_tui/broker"
 	"revolt_tui/log"
+	"revolt_tui/stylesheet"
 	"revolt_tui/stylesheet/colors"
 	"strings"
 	"time"
@@ -119,6 +120,7 @@ func (cht *chatTab) Init(s *revoltgo.Server, width, height int) {
 
 	cht.newMessageBox = textarea.New()
 	cht.newMessageBox.MaxHeight = 4
+	cht.newMessageBox.Focus()
 
 	// include height margins in the viewport
 	cht.msgView = viewport.New(width, height-cht.newMessageBox.MaxHeight-1)
@@ -126,6 +128,12 @@ func (cht *chatTab) Init(s *revoltgo.Server, width, height int) {
 }
 
 func (cht *chatTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {
+
+	// check for an enter key to submit the current state of the message compose area
+	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.Type == tea.KeyEnter {
+
+	}
+
 	cmds := make([]tea.Cmd, 2)
 	cht.msgView, cmds[0] = cht.msgView.Update(msg)
 	cht.newMessageBox, cmds[1] = cht.newMessageBox.Update(msg)
@@ -133,7 +141,8 @@ func (cht *chatTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 }
 
 func (cht *chatTab) View() string {
-	return cht.msgView.View() + "\n" + cht.newMessageBox.View()
+	// draw a border around the message box to represent that it is highlighted
+	return cht.msgView.View() + "\n" + stylesheet.NewMessageComposeArea.Render(cht.newMessageBox.View())
 }
 
 // The message store represents the current, local cache of messages able to be displayed

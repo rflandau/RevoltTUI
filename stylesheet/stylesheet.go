@@ -1,6 +1,10 @@
 package stylesheet
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"revolt_tui/stylesheet/colors"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 func TabBorderWithBottom(left, middle, right string) lipgloss.Border {
 	border := lipgloss.RoundedBorder()
@@ -17,3 +21,7 @@ var TabBorders = struct {
 	Inactive: TabBorderWithBottom("┴", "─", "┴"),
 	Active:   TabBorderWithBottom("┘", " ", "└"),
 }
+
+var NewMessageComposeArea lipgloss.Style = lipgloss.NewStyle().
+	Border(lipgloss.RoundedBorder()).
+	BorderForeground(colors.TabBorderForeground)

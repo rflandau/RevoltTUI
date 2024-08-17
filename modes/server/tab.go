@@ -72,6 +72,9 @@ func (a *Action) drawTabs() string {
 
 	// draw each tab
 	for i, t := range a.tabs {
+		if !t.Enabled() { // do not display disabled tabs
+			continue
+		}
 		var style lipgloss.Style = inactiveTabStyle
 		isFirst, isLast, isActive := i == 0, i == int(a.tabCount)-1, i == int(a.activeTab)
 		if isActive {
@@ -98,10 +101,6 @@ func (a *Action) drawTabs() string {
 		}
 
 		renderedTabs = append(renderedTabs, style.Render(nameTxt))
-
-		if !t.Enabled() { // do not display disabled tabs
-			continue
-		}
 	}
 
 	// conjoin the drawn tabs

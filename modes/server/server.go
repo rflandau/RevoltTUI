@@ -105,8 +105,7 @@ func (a *Action) Update(msg tea.Msg) tea.Cmd {
 	// window size messages must be passed to every tab, lest they lost if a tab is unfocused
 	if WSMsg, ok := msg.(tea.WindowSizeMsg); ok {
 		// modify the height and width to fit within our content window beneath the tabs
-		WSMsg.Width -= 2                                   // TODO calculate required margin
-		WSMsg.Height = (lipgloss.Height(a.drawTabs()) + 2) // TODO extract to save cycles
+		WSMsg.Height -= (lipgloss.Height(a.drawTabs()) + 2) // TODO extract to save cycles
 
 		var (
 			cmd    tea.Cmd
@@ -140,7 +139,7 @@ func (a *Action) View() string {
 	sb.WriteString(tabs + "\n")
 	// box the entire display
 	content := a.tabs[a.activeTab].View()
-	sb.WriteString(windowStyle.Width(broker.Width()).Height(broker.Height() - (lipgloss.Height(tabs) + 1)).Render(content))
+	sb.WriteString(content)
 	return sb.String()
 }
 

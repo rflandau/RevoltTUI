@@ -147,6 +147,7 @@ func (cht *chatTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 
 		cht.msgs.messages = append(cht.msgs.messages, newMsg) // attach the message to our list of displayed messages
 		cht.msgs.newestMessageID = newMsg.ID
+		cht.populateViewport()
 
 		cht.newMessageBox.SetValue("") // clear out the existing message
 	}
@@ -186,6 +187,9 @@ func (cht *chatTab) populateViewport() {
 	var sb strings.Builder
 	totalMsgCount := len(cht.msgs.messages)
 	for i := 0; i < viewportMessageLimit && i < totalMsgCount; i++ {
+		if cht.msgs.messages[i] == nil {
+			continue
+		}
 		sb.WriteString(displayMessage(cht.msgs.messages[i]) + "\n")
 	}
 
@@ -195,7 +199,7 @@ func (cht *chatTab) populateViewport() {
 // helper function for populateViewport(). Given a singular message, it returns a formatted string corresponding to its type.
 // Note the lack of suffixed newlines.
 func displayMessage(msg *revoltgo.Message) string {
-	if msg == nil {
+	if msg == nil || msg.System == nil {
 		return "undefined message"
 	}
 

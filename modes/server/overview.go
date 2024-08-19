@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"revolt_tui/broker"
+	"revolt_tui/stylesheet/colors"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -48,15 +49,17 @@ func generateOverview(s *revoltgo.Server) string {
 	}
 
 	// fetch data for the overview
-
-	owner, err := broker.Session.User(s.Owner)
-	if err != nil {
+	var username string
+	if owner, err := broker.Session.User(s.Owner); err != nil || owner == nil {
 		log.Warn("failed to fetch server owner", "owner ID", s.Owner, "server ID", s.ID)
+		username = "unknown (" + s.Owner + ")"
+	} else {
+		username = owner.DisplayName
 	}
 
 	// generate and pair up fields+values
 	left := lipgloss.JoinVertical(lipgloss.Right, leftAlignerSty.Render("Owner:"), leftAlignerSty.Render("ID:"))
-	right := owner.Username + "\n" + s.ID
+	right := username + "\n" + s.ID
 
 	sb.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, left, right))
 
@@ -78,7 +81,9 @@ func (o *overviewTab) View() string {
 var (
 	titleSty       lipgloss.Style = lipgloss.NewStyle().Bold(true)
 	subtitleSty    lipgloss.Style = lipgloss.NewStyle().Italic(true)
-	leftAlignerSty lipgloss.Style = lipgloss.NewStyle().AlignHorizontal(lipgloss.Right).Width(7).PaddingRight(1)
+	leftAlignerSty lipgloss.Style = lipgloss.NewStyle().
+			AlignHorizontal(lipgloss.Right).
+			Width(7).PaddingRight(1).Foreground(colors.LeftField)
 )
 
 //#endregion styles

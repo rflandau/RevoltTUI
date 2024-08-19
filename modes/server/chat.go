@@ -131,7 +131,24 @@ func (cht *chatTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 
 	// check for an enter key to submit the current state of the message compose area
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.Type == tea.KeyEnter {
+		msgText := cht.newMessageBox.Value()
+		if strings.TrimSpace(msgText) == "" {
+			log.Writer.Debug("refusing to send empty message")
+			return textarea.Blink, CHAT
+		}
+		// attempt to submit the message
+		msg := revoltgo.MessageSend{Content: msgText}
 
+		newMsg, err := broker.Session.ChannelMessageSend(cht.channelTab.activeChannel.ID, msg)
+		if err != nil {
+			log.Writer.Warn("failed to send message", "error", err)
+			return textarea.Blink, CHAT
+		}
+
+		cht.msgs.messages = append(cht.msgs.messages, newMsg) // attach the message to our list of displayed messages
+		cht.msgs.newestMessageID = newMsg.ID
+
+		cht.newMessageBox.SetValue("") // clear out the existing message
 	}
 
 	cmds := make([]tea.Cmd, 2)
@@ -142,7 +159,11 @@ func (cht *chatTab) Update(msg tea.Msg) (tea.Cmd, tabConst) {
 
 func (cht *chatTab) View() string {
 	// draw a border around the message box to represent that it is highlighted
-	return cht.msgView.View() + "\n" + stylesheet.NewMessageComposeArea.Render(cht.newMessageBox.View())
+
+	existingMsgs := cht.msgView.View()
+	compose := stylesheet.NewMessageComposeArea.Render(cht.newMessageBox.View())
+
+	return existingMsgs + "\n" + compose + "\n" + cht.err.Error()
 }
 
 // The message store represents the current, local cache of messages able to be displayed

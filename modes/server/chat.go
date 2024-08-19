@@ -162,8 +162,12 @@ func (cht *chatTab) View() string {
 
 	existingMsgs := cht.msgView.View()
 	compose := stylesheet.NewMessageComposeArea.Render(cht.newMessageBox.View())
+	var errStr string
+	if cht.err != nil {
+		errStr = cht.err.Error()
+	}
 
-	return existingMsgs + "\n" + compose + "\n" + cht.err.Error()
+	return existingMsgs + "\n" + compose + "\n" + errStr
 }
 
 // The message store represents the current, local cache of messages able to be displayed

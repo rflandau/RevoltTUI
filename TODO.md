@@ -1,2 +1,6 @@
 - Pressing `enter` at the login credentials should only submit if both fields have data; otherwise it should switch field.
 - fix tab drawing, currently using incorrect corner pieces (flipped?)
+- in chat.go, clear the error message after a timer has elapsed
+    - also, spin up a time whenever the error message is set (in a separate goroutine, checking for existing goroutines)
+- display non-text voice channels in the channels tab of a server, but disallow their selection
+    - mark each channel with an icon of some sort to denote its type
